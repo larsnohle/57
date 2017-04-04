@@ -1,0 +1,45 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+import random
+
+def main():
+    done = False
+    values = list()
+    while not done:
+        try:
+            value = input("Enter a value: ")    
+            if value.strip() == 'done':
+                done = True
+            else:
+                values.append(value)
+        except EOFError:
+            done = True
+
+    sum = 0
+    min = None
+    max = None
+    for value in values:
+        sum += int(value)
+        if int(value) > max:
+            max = value
+
+        if int(value) < min:
+            min = value
+
+    mean = float(sum) / len(values)
+        
+    print("The sum is %d" % sum)
+    print("The mean is %f" % mean)
+    print("The max is %d" % max)
+    print("The mim is %d" % min)
+
+    
+        
+### MAIN ###
+
+if __name__ == '__main__':
+    main()
+
+
+

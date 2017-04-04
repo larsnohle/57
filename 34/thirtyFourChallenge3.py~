@@ -1,0 +1,41 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+def read_employees():
+    f = open('employeesChallenge3.txt', 'r')
+
+    employees = list()
+    for employee in f:
+        employees.append(employee.strip())
+
+
+    f.close()
+    return employees
+
+def write_to_file(s):
+    f = open('employeesChallenge3.txt', 'w')
+    f.write(s)
+    f.close()
+    
+
+
+def main():
+    employees = read_employees()
+    while len(employees) > 0:
+        print("\nThere are %d employees: " % len(employees))
+        for employee in employees:
+            print(employee)
+        employee_to_remove = input("Enter an employee name to remove: ")
+
+        try:
+            employees.remove(employee_to_remove)
+        except ValueError:
+            print("%s is not an employee!")
+            
+### MAIN ###
+
+if __name__ == '__main__':
+    main()
+
+
+

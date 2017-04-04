@@ -1,0 +1,31 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+def get_positive_number_input(msg, to_float = False):
+    done = False
+    while not done:
+        try:
+            i = -1.0
+            if to_float == True:
+                i = float(input(msg))
+            else:
+                i = int(input(msg))
+            if i < 0:
+                print("Please enter a number > 0")
+            else:
+                done = True
+        except ValueError:
+            print("That was not a valid integer. Please try again!")
+
+    return i
+
+
+def main():
+    first_number = get_positive_number_input("Please enter the first number: ")
+    second_number = get_positive_number_input("Please enter the second number: ")
+    third_number = get_positive_number_input("Please enter the third number: ")
+
+### MAIN ###
+
+if __name__ == '__main__':
+    main()

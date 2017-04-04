@@ -1,0 +1,44 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+def count_characters(c, s):
+    cnt = 0
+    for cc in s:
+        if cc = c:
+            cnt += 1
+    return cnt
+
+
+
+def is_anagram(first_string, second_string):
+    if len(first_string) != len(second_string):
+        return False
+
+    if len(first_string) == 0:
+        return False
+
+    i = 0
+    string_length = len(first_string)
+    while i < string_length:
+        c = first_string[i]
+        i += 1
+        if count_characters(c, first_string) != count_characters(second_string):
+            return False
+
+    return True
+
+def main():
+    print("Enter two strings and I'll tell you if they are anagrams")
+    first_string = input("Enter the first string: ")
+    second_string = input("Enter the second string: ")
+
+    if is_anagram(first_string, second_string):
+        print("\"%s\"  and \"%s\" are anagrams" % (first_string, second_string))
+    else:
+        print("\"%s\"  and \"%s\" are NOT anagrams" % (first_string, second_string))
+
+
+### MAIN ###
+
+if __name__ == '__main__':
+    main()

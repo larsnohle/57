@@ -1,0 +1,21 @@
+persons = list()
+
+#John Johnson Manager 2016-12-31
+#Tou Xiong Software Engineer 2016-10-05
+#Michaela Michaelson District Manager Jake Jacobson
+#Programmer
+#Jacquelyn Jackson DBA
+#Sally Web Developer
+#Weber
+#2015-12-19
+#2015-12-18
+
+FIRST_NAME = "firstName"
+LAST_NAME = "lastName"
+POSITION = "position"
+SEPARATION_DATE = "separationDate"
+persons.append({FIRST_NAME : "John", LAST_NAME: "", POSITION: "", SEPARATION_DATE: ""})
+persons.append({FIRST_NAME : "Tou", LAST_NAME: "", POSITION: "", SEPARATION_DATE: ""})
+persons.append({FIRST_NAME : "Michaela", LAST_NAME: "", POSITION: "", SEPARATION_DATE: ""})
+persons.append({FIRST_NAME : "Jacquelyn", LAST_NAME: "", POSITION: "", SEPARATION_DATE: ""})
+persons.append({FIRST_NAME : "Sally", LAST_NAME: "", POSITION: "", SEPARATION_DATE: ""})

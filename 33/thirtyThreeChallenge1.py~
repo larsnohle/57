@@ -1,0 +1,274 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+import sys
+import random
+
+from PyQt4 import QtGui
+from PyQt4 import QtCore
+
+class GameBoardWidget(QtGui.QWidget):
+  
+    def __init__(self, callback, numberOfRows, numberOfColumns, horizontalMargin, verticalMargin, maxNumber):      
+        super(GameBoardWidget, self).__init__()
+
+        self.callback = callback
+        self.numberOfRows = None
+        self.numberOfColumns = None
+        self.horizontalMargin = horizontalMargin
+        self.verticalMargin = verticalMargin
+        self.maxNumber = None
+        self.squareContents = None
+
+        self.isRunning = None
+        
+        self.startNewGame(numberOfRows, numberOfColumns,  maxNumber)
+        self.initUI()
+        
+    def initUI(self):        
+        self.setMinimumSize(1, 30)
+        
+    def startNewGame(self, numberOfRows, numberOfColumns,  maxNumber):
+        self.numberOfRows = numberOfRows
+        self.numberOfColumns = numberOfColumns
+        self.maxNumber = maxNumber
+
+        self.initializeSquareContents()
+        self.isRunning = True
+
+    def setIsRunning(self, running):
+        self.isRunning = running
+        
+    def initializeSquareContents(self):
+        self.squareContents = list(range(1, self.maxNumber + 1))
+
+    def getSquareContent(self, index):
+        if index >= 0 and index < len(self.squareContents):
+            return self.squareContents[index]
+
+        return None
+    
+    def setSquareContent(self, index, content):
+        if index >= 0 and index < len(self.squareContents):
+            self.squareContents[index] = content
+
+    def paintEvent(self, e):      
+        qp = QtGui.QPainter()
+        qp.begin(self)
+        self.drawWidget(qp)
+        qp.end()
+
+    def mouseReleaseEvent(self, QMouseEvent):
+        # If the game is not running, just ignore mouse clicks.
+        if not self.isRunning:
+            return
+        
+        x = QMouseEvent.x()
+        y = QMouseEvent.y()
+        indexInList = self.coordinatesToIndexInList(x, y)
+        number = self.getSquareContent(indexInList)
+        self.setSquareContent(indexInList, None)
+        self.repaint()
+        self.callback.numberSelected(number)
+
+    def coordinatesToIndexInList(self, x, y):
+        (widthOfGameBoard, heightOfGameBoard, columnWidth, rowHeight) = self.calculateGameBoardSizes()
+        
+        row = int(y / rowHeight)
+        col = int(x / columnWidth)
+
+        index = row * self.numberOfColumns + col
+        return index
+
+    def calculateGameBoardSizes(self):
+        size = self.size()
+        w = size.width()
+        h = size.height()
+
+        widthOfGameBoard = w - self.horizontalMargin
+        heightOfGameBoard = h - self.verticalMargin
+        
+        columnWidth =  widthOfGameBoard/ self.numberOfColumns
+        rowHeight = heightOfGameBoard / self.numberOfRows    
+
+        return (widthOfGameBoard, heightOfGameBoard, columnWidth, rowHeight)
+        
+    
+    def drawWidget(self, qp):
+        (widthOfGameBoard, heightOfGameBoard, columnWidth, rowHeight) = self.calculateGameBoardSizes()
+        
+        qp.setPen(QtGui.QColor(255, 255, 255))
+        qp.setBrush(QtGui.QColor(255, 255, 184))
+
+        pen = QtGui.QPen(QtGui.QColor(20, 20, 20), 1, 
+            QtCore.Qt.SolidLine)
+            
+        qp.setPen(pen)
+        qp.setBrush(QtCore.Qt.NoBrush)
+
+        # Draw vertical lines.
+        for col in range(0, self.numberOfColumns + 1):
+            x = col * columnWidth
+            qp.drawLine(x, 0, x, heightOfGameBoard)
+
+        # Draw horizontal lines.
+        for row in range(0, self.numberOfRows + 1):
+            y = row * rowHeight
+            qp.drawLine(0, y, widthOfGameBoard, y)
+
+        qp.setPen(QtGui.QColor(168, 34, 3))
+        qp.setFont(QtGui.QFont('Decorative', self.getFontSize()))
+
+        squareOrdinalIndex = 0
+        for row in range(0, self.numberOfRows):
+            y = rowHeight / 2  +  rowHeight * row
+            
+            for col in range(0, self.numberOfColumns):
+                x = columnWidth / 2 + columnWidth * col
+
+                if squareOrdinalIndex <= self.maxNumber:
+                    if squareOrdinalIndex < len(self.squareContents) and self.squareContents[squareOrdinalIndex] != None:
+                        qp.drawText(x, y, str(self.squareContents[squareOrdinalIndex]))
+                        
+                    squareOrdinalIndex += 1
+
+    def getFontSize(self):
+        if self.maxNumber > 100:
+            return 5
+        elif self.maxNumber > 10:
+            return 10
+        else:
+            return 15
+
+
+########################## MAIN CLASS ##########################
+
+        
+class ThirtyTwoChallenge3(QtGui.QWidget):    
+    def __init__(self):
+        super(ThirtyTwoChallenge3, self).__init__()
+
+        # CONSTANTS
+        self.WIDTH = 400
+        self.HEIGHT = 350
+        self.VERTICAL_MARGIN = 5
+        self.HORIZONTAL_MARGIN = 5
+        
+        # Instance variables.
+        self.wid = None
+        self.difficultyLevelComboBox = None
+        self.statusLabel = None
+        self.targetNumber = None
+        self.isRunning = None
+        self.numberOfAttempts = 0
+        
+        #self.setGeometry(300, 300, 280, 170)
+        self.setWindowTitle('Guess the Number')
+        
+        # Setup the GUI.
+        self.initUI()
+
+        # Start the game.
+        self.startNewGame("1")
+        
+    def initUI(self):        
+        # Create widgets.
+        self.difficultyLevelLabel = QtGui.QLabel("Difficulty level")
+        self.difficultyLevelComboBox = QtGui.QComboBox()
+        self.statusLabel = QtGui.QLabel("HEJ")
+        
+        # Add numbers to the combo box.
+        for i in range(1, 4):
+            self.difficultyLevelComboBox.addItem(str(i))
+        
+        self.wid = GameBoardWidget(self, 4, 3, self.HORIZONTAL_MARGIN, self.VERTICAL_MARGIN, 10)
+        
+        # LAYOUT FOR THE WIDGETS.
+
+        # Set up layout to contain the widgets.
+        grid = QtGui.QGridLayout()
+        grid.setSpacing(10)
+
+        # Add widgets to the layout.
+        grid.addWidget(self.difficultyLevelLabel, 0, 0)
+        grid.addWidget(self.difficultyLevelComboBox, 0, 1)
+        grid.addWidget(self.wid, 1, 0, 1, 2)
+        grid.addWidget(self.statusLabel, 2, 0, 1, 2)        
+
+        grid.setRowStretch(1, 1)
+        
+        # Create layout to take care of extra vertical space.
+        vbox = QtGui.QVBoxLayout()
+        vbox.addLayout(grid)
+
+        # A set layout of this widget.
+        self.setLayout(vbox) 
+
+        # Connect signals to slots.
+        self.difficultyLevelComboBox.currentIndexChanged.connect(self.difficultyLevelComboBoxIndexChanged)
+
+        # Position on screen and show.
+        self.resize(self.WIDTH, self.HEIGHT)
+        self.center()
+        self.show()
+ 
+    def center(self):
+        qr = self.frameGeometry()
+        cp = QtGui.QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())       
+
+    def difficultyLevelComboBoxIndexChanged(self, index):        
+        difficultyLevelAsString = self.difficultyLevelComboBox.itemText(index)
+        self.startNewGame(difficultyLevelAsString)
+
+    def startNewGame(self, difficultyLevelAsString):
+        (numberOfRows, numberOfColumns,  maxNumber) = self.createGameParameters(difficultyLevelAsString)
+        self.targetNumber = random.randint(1, maxNumber + 1)
+        self.numberOfAttempts = 0
+        self.statusLabel.setText("Välj ett tal mellan 1 och %d" % maxNumber)
+        self.isRunning = True
+        self.wid.startNewGame(numberOfRows, numberOfColumns,  maxNumber)
+        self.repaint()
+        
+        
+    def createGameParameters(self, difficultyLevelAsString):
+        numberOfRows = 4
+        numberOfColumns = 3
+        maxNumber = 10
+
+        difficultyLevel = int(difficultyLevelAsString)
+        # Handle difficulty level 2 and 3. Everything else, including 1, should default to difficulty level 1.
+        if difficultyLevel == 2: 
+            (numberOfRows, numberOfColumns,  maxNumber) = (10, 10, 100)
+        elif difficultyLevel == 3: 
+            (numberOfRows, numberOfColumns,  maxNumber) = (32, 32, 1000)
+        
+        return (numberOfRows, numberOfColumns,  maxNumber)
+
+
+    def numberSelected(self, number):
+        if not self.isRunning:
+            print("This should not occur!")
+            return
+
+        self.numberOfAttempts += 1
+
+        if number == self.targetNumber:
+            self.isRunning = False            
+            self.wid.setIsRunning(False)
+            self.statusLabel.setText("Det var rätt! Talet var %d. Du klarade det på %d försök." % (self.targetNumber, self.numberOfAttempts))
+        elif number < self.targetNumber:
+            self.statusLabel.setText("%d är för lågt!" % number)
+        else:
+            self.statusLabel.setText("%d är för högt!" % number)
+            
+def main():
+    
+    app = QtGui.QApplication(sys.argv)
+    ex = ThirtyTwoChallenge3()
+    sys.exit(app.exec_())
+
+
+if __name__ == '__main__':
+    main()

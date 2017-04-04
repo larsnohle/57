@@ -1,0 +1,68 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+digits = '0 1 2 3 4 5 6 7 8 9'.split()
+special_characters = "! \" # $ % & \\ ' ( ) * + , - . / : ; < = > ? @ [ \ \ ] ^ _ ` { | } ~".split()
+
+def contain_number(s):
+    for c in s:
+        if c in digits:
+            return True
+    return False
+
+def contain_only_numbers(s):
+    for c in s:
+        if c not in digits:
+            return False
+    return True
+
+
+def contain_special_character(s):
+    for c in s:
+        if c in special_characters:
+            return True
+    return False
+
+def contain_letter(s):
+    for c in s:
+        if c.isalpha():
+            return True
+    return False
+
+def contain_only_letters(s):
+    for c in s:
+        if not c.isalpha():
+            return False
+    return True
+
+
+def passwordValidator(pwd):
+    if len(pwd) < 8:
+        if contain_only_numbers(pwd):
+            return 1
+        elif contain_only_letters(pwd):
+            return 2
+HERE
+    return -1
+
+def main():
+    pwd = input("Please enter the password to be checked: ")
+    rating = passwordValidator(pwd)
+
+    rating_as_string = ""
+    if rating <= 1:
+        rating_as_string = "very weak"
+    elif rating == 2:
+        rating_as_string = "weak"
+    elif rating == 3:
+        rating_as_string = "strong"
+    else:
+        rating_as_string = "very strong"
+
+    print("The password %s is a %s password." % (pwd, rating_as_string))
+
+### MAIN ###
+
+if __name__ == '__main__':
+    main()
+

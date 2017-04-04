@@ -1,0 +1,43 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+def get_positive_number_input(msg, to_float = False):
+    done = False
+    while not done:
+        try:
+            i = -1.0
+            if to_float == True:
+                i = float(input(msg))
+            else:
+                i = int(input(msg))
+            if i < 0:
+                print("Please enter a number > 0")
+            else:
+                done = True
+        except ValueError:
+            print("That was not a valid integer. Please try again!")
+
+    return i
+
+
+def input_scale():
+    done = False
+    while not done:
+        scale = input("C or F? ")
+            if scale == 'C' or scale == 'c' or scale == 'F' or scale == 'f':
+                scale = scale.to_upper()
+                done = True
+    return scale
+
+def main():
+    
+
+### MAIN ###
+
+if __name__ == '__main__':
+    main()
+
+
+###################################################################
+
+

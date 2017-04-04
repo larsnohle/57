@@ -1,0 +1,20 @@
+def get_integer_input(msg):
+    done = False
+    while not done:
+        try:
+            i = int(input(msg))
+        except ValueError:
+            print("That was not a valid integer. Please try again!")
+
+    return i
+
+s1 = input("What is the first number? ")
+s2 = input()
+
+i1 = get_integer_input("What is the first number? ")
+i2 = get_integer_input("What is the second number? ")
+
+string_to_output = "%d + %d = %d\n%d - %d = %d\n%d * %d = %d\n%d / %d = %d" % (i1, i2, i1 + i2, i1, i2, i1 - i2, i1, i2, i1 * i2, i1, i2, i1 / i2)
+print(string_to_output)
+
+

@@ -1,0 +1,29 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+def get_positive_number_input(msg):
+    done = False
+    while not done:
+        try:
+            i = int(input(msg))
+            if i <= 0:
+                print("Please enter a number >= 0")
+            else:
+                done = True
+        except ValueError:
+            print("That was not a valid integer. Please try again!")
+
+    return i
+
+
+def main():
+    weight = get_positive_number_input("Weight? ")
+    gender = input("Gender? ")
+    weight = get_positive_number_input("Number of drinks? ")
+    alcohol_percent_in_drink = get_positive_number_input("Alcohol % in drink? ")
+    hours = get_positive_number_input("Hours since last drink? ")
+
+### MAIN ###
+
+if __name__ == '__main__':
+    main()

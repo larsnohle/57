@@ -1,0 +1,163 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+import sys
+from PyQt4 import QtGui
+
+
+class EighteenChallengeThree(QtGui.QWidget):
+    
+    def __init__(self):
+        super(EighteenChallengeThree, self).__init__()
+        
+        # Constants
+        self.temperatureInCelsiusMessage = "Temperature in Celsius"
+        self.temperatureInFahrenheitMessage = "Temperature in Fahrenheit"
+        self.celsius = "Celsius"
+        self.fahrenheit = "Fahrenheit"
+
+        # Instance variables.
+        self.celsiusRadioButton = None
+        self.fahrenheitRadioButton  = None
+
+        self.temperatureUnitLabel = None
+        self.temperatureValueLabel = None
+        self.temperatureValueTextEdit = None
+
+        self.firstOutputLabel = None
+
+        # Setup the GUI.
+        self.initUI()
+        
+    def initUI(self):        
+        # Create widgets.
+        self.temperatureUnitLabel = QtGui.QLabel("Temperature unit")
+        self.temperatureValueLabel = QtGui.QLabel("Temperature value")
+
+        self.celsiusRadioButton  = QtGui.QRadioButton(self.tr(self.celsius), self)
+        self.fahrenheitRadioButton  = QtGui.QRadioButton(self.tr(self.fahrenheit), self)
+
+        self.celsiusRadioButton.setChecked(True)
+
+        buttonGroup = QtGui.QButtonGroup()
+        buttonGroup.addButton(self.celsiusRadioButton)
+        buttonGroup.addButton(self.fahrenheitRadioButton)
+
+        self.temperatureValueTextEdit = QtGui.QLineEdit()
+        self.firstOutputLabel = QtGui.QLabel(self.createFirstOutputLine(None))
+
+        # Layout for the widgets.
+        radioButtonHBox = QtGui.QHBoxLayout()
+        radioButtonHBox.addWidget(self.celsiusRadioButton)
+        radioButtonHBox.addWidget(self.fahrenheitRadioButton)
+        radioButtonHBox.addStretch(1)
+
+        # Set up layout to contain the widgets.
+        grid = QtGui.QGridLayout()
+        grid.setSpacing(10)
+
+        # Add widgets to the layout.
+        grid.addWidget(self.temperatureUnitLabel, 1, 0)
+        grid.addLayout(radioButtonHBox, 1, 1)
+
+        grid.addWidget(self.temperatureValueLabel, 2, 0)
+        grid.addWidget(self.temperatureValueTextEdit, 2, 1)
+        grid.addWidget(self.firstOutputLabel, 4, 0, 1, 2)
+
+        # Create layout to take care of extra vertical space.
+        vbox = QtGui.QVBoxLayout()
+        vbox.addLayout(grid)
+        vbox.addStretch(1)
+
+        # A set layout of this widget.
+        self.setLayout(vbox) 
+
+        # Connect signals to slots.
+        self.temperatureValueTextEdit.textChanged.connect(self.oneOfTheNumberInputTextsChanged)
+        self.celsiusRadioButton.toggled.connect(self.unitButtonToggled)
+        self.fahrenheitRadioButton.toggled.connect(self.unitButtonToggled)
+
+        # Position on screen and show.
+        self.resize(400, 100)
+        self.center()
+        self.show()
+ 
+    def center(self):
+        qr = self.frameGeometry()
+        cp = QtGui.QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())       
+        
+    def unitButtonToggled(self, checked):
+        if checked == True and self.celsiusRadioButton.isChecked():
+            self.temperatureUnitLabel.setText(self.temperatureInCelsiusMessage)
+            self.updateOutputFields()
+        elif checked == True and self.fahrenheitRadioButton.isChecked():
+            self.temperatureUnitLabel.setText(self.temperatureInFahrenheitMessage)
+            self.updateOutputFields()
+
+    def oneOfTheNumberInputTextsChanged(self):
+        self.updateOutputFields()
+
+    def updateOutputFields(self):
+        temperature = self.getTemperature()
+        if temperature != None:            
+            self.firstOutputLabel.setText(self.createFirstOutputLine(temperature))
+        else:
+            self.clearTextEdits()
+
+    def getTemperature(self):
+        temperatureAsString = self.temperatureValueTextEdit.text()
+        return self.parseAsInteger(temperatureAsString)
+
+    def parseAsInteger(self, numberAsString):
+        i = None
+        try:
+            i = int(numberAsString)
+        except ValueError:
+            pass # We just return None if we could not parse the string as an int.
+
+        return i
+
+    def createFirstOutputLine(self, temperatureValue):
+        if temperatureValue != None:
+            unit = self.getSelectedTemperatureUnit()
+            if unit == self.celsius:
+                temperatureToDisplay = self.convertToFahrenheit(temperatureValue)
+            else:
+                temperatureToDisplay = self.convertToCelsius(temperatureValue)
+
+            otherTemperatureUnit = self.getTheOtherTemperatureUnit(unit)
+
+            return "The temperature in %s is %.2f." % (otherTemperatureUnit, temperatureToDisplay)
+
+    def getSelectedTemperatureUnit(self):
+        if self.celsiusRadioButton.isChecked():
+            return self.celsius
+        elif self.fahrenheitRadioButton.isChecked():
+            return self.fahrenheit
+
+    def getTheOtherTemperatureUnit(self, temperatureUnit):
+          if temperatureUnit == self.celsius:
+              return self.fahrenheit
+          else:
+            return self.celsius
+
+    def clearTextEdits(self):
+        self.firstOutputLabel.setText("")
+
+    def convertToFahrenheit(self, temperatureValueInCelsius):
+        return (temperatureValueInCelsius * 9.0 / 5.0) + 32
+
+    def convertToCelsius(self, temperatureValueInFahrenheit):
+        return (temperatureValueInFahrenheit - 32) * 5.0 / 9.0
+
+def main():
+    
+    app = QtGui.QApplication(sys.argv)
+    ex = EighteenChallengeThree()
+    sys.exit(app.exec_())
+
+
+if __name__ == '__main__':
+    main()

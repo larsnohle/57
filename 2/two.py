@@ -1,0 +1,3 @@
+input_string = input("What's the input string? ")
+output_string = "%s has %d characters." % (input_string, len(input_string))
+print(output_string)

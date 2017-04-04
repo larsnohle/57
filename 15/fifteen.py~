@@ -1,0 +1,23 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+def main():
+    order_amount = get_positive_number_input("What is the order amount? ", True)
+    state = input("What is the state? ")
+    total = order_amount
+
+    string_to_output = ""
+    state = state.upper()
+    if state == "WI" or state == 'WISCONSIN':
+        string_to_output += "The subtotal is $%.2f.\n" % order_amount
+        tax = round_cents_up(order_amount * 0.055)
+        string_to_output += "The tax is $%.2f\n" % tax
+        total += tax
+
+    string_to_output += "The total is $%.2f." % total
+    print(string_to_output)
+
+### MAIN ###
+
+if __name__ == '__main__':
+    main()

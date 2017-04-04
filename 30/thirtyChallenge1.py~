@@ -1,0 +1,74 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+import sys
+from PyQt4 import QtGui
+from PyQt4 import QtCore
+import re
+
+class ThirtyChallengeOne(QtGui.QWidget):
+    
+    def __init__(self):
+        super(ThirtyChallengeOne, self).__init__()
+        
+        # Instance variables.
+        self.baseNumberLabel = None
+        self.baseNumberComboBox = None
+
+        # Setup the GUI.
+        self.initUI()
+        
+    def initUI(self):        
+        # Create widgets.
+        self.baseNumberLabel = QtGui.QLabel("Base number")
+        self.baseNumberComboBox = QtGui.QComboBox()
+
+        # Add numbers to the combo box.
+        for i in range(0, 13):
+            self.baseNumberComboBox.addItem(str(i))
+
+        # LAYOUT FOR THE WIDGETS.
+
+        # Set up layout to contain the widgets.
+        grid = QtGui.QGridLayout()
+        grid.setSpacing(10)
+
+        # Add widgets to the layout.
+        grid.addWidget(self.baseNumberLabel, 1, 0)
+        grid.addWidget(self.baseNumberComboBox, 1, 1)
+
+        # Create layout to take care of extra vertical space.
+        vbox = QtGui.QVBoxLayout()
+        vbox.addLayout(grid)
+        vbox.addStretch(1)
+
+        # A set layout of this widget.
+        self.setLayout(vbox) 
+
+        # Connect signals to slots.
+        self.baseNumberComboBox.currentIndexChanged.connect(self.baseNumberComboBoxIndexChanged)
+        # Position on screen and show.
+        self.resize(400, 100)
+        self.center()
+        self.show()
+ 
+    def center(self):
+        qr = self.frameGeometry()
+        cp = QtGui.QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())       
+        
+    def baseNumberComboBoxIndexChanged(self, index):
+        print("Index: %d" % index)
+#        firstName = self.baseNumberComboBox.text()
+
+
+def main():
+    
+    app = QtGui.QApplication(sys.argv)
+    ex = ThirtyChallengeOne()
+    sys.exit(app.exec_())
+
+
+if __name__ == '__main__':
+    main()

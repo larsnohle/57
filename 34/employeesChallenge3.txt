@@ -1,0 +1,30 @@
+John Smith
+Jackie Jackson
+Chris Jones
+Amanda Cullen
+Jeremy Goodwin
+
+There are 5 employees: 
+John Smith
+Jackie Jackson
+Chris Jones
+Amanda Cullen
+Jeremy Goodwin
+
+There are 4 employees: 
+John Smith
+Jackie Jackson
+Chris Jones
+Jeremy Goodwin
+
+There are 3 employees: 
+John Smith
+Jackie Jackson
+Jeremy Goodwin
+
+There are 2 employees: 
+John Smith
+Jackie Jackson
+
+There are 1 employees: 
+John Smith

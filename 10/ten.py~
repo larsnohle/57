@@ -1,0 +1,29 @@
+price_1_string    = input("Enter the price of item 1: ")
+quantity_1_string = input("Enter the price of item 1: ")
+price_2_string    = input("Enter the price of item 2: ")
+quantity_2_string = input("Enter the price of item 2: ")
+price_3_string    = input("Enter the price of item 3: ")
+quantity_3_string = input("Enter the price of item 3: ")
+
+price_1 = int(price_1_string)
+quantity_1 = int(quantity_1_string)
+price_2  = int(price_2_string)
+quantity_2 = int(quantity_2_string)
+price_3  = int(price_3_string)
+quantity_3 = int(quantity_3_string)
+
+
+
+
+
+
+
+Enter the quantity
+Enter the price of
+Enter the quantity
+Enter the price of
+Enter the quantity
+Subtotal: $64.00
+Tax: $3.52
+Total: $67.52
+item 1:")

@@ -1,0 +1,6 @@
+authors = ["Obi-Wan Kenobi"]
+
+obi_wan_quotes = {}
+
+for a in authors:
+    print(a)

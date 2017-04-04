@@ -1,0 +1,32 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+import sys
+import os
+
+def display_hook(typed_text):
+    print("OUT: %s\n" % typed_text)
+    
+
+def main():
+    username_lookup = {}
+    username_lookup["lars"] = "larsPassword"
+
+    username = input("Username: ")
+    print("Password: ")
+
+    old_stdout = sys.stdout
+    f = open(os.devnull, 'w')
+    sys.stdout = f    
+    password = input()
+#    sys.stdout = old_stdout
+
+    if username in username_lookup and username_lookup[username] == password:
+        print("Welcome!")
+    else:
+        print("I don’t know you.")
+
+### MAIN ###
+
+if __name__ == '__main__':
+    main()

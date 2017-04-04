@@ -1,0 +1,7 @@
+length_string = input("What is the length of the room in feet? ")
+width_string = input("What is the width of the room in feet? ")
+
+length_in_feet = int(length_string)
+width_in_feet = int(width_string)
+
+area_in_feet = length_in_feet * width_in_feet

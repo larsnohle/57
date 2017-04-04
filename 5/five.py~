@@ -1,0 +1,2 @@
+i1 = input("What is the first number")
+i2 = input("What is the second number")

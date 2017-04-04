@@ -1,0 +1,26 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+def is_anagram(first_string, second_string):
+    if len(first_string) != len(second_string):
+        return False
+
+HERE
+
+
+
+def main():
+    print("Enter two strings and I'll tell you if they are anagrams")
+    first_string = input("Enter the first string:")
+    second_string = input("Enter the second string:")
+
+    if is_anagram(first_string, second_string):
+        print("\"%s\"  and \"%s\" are anagrams" % (first_string, second_string))
+    else:
+        print("\"%s\"  and \"%s\" are NOT anagrams" % (first_string, second_string))
+
+
+### MAIN ###
+
+if __name__ == '__main__':
+    main()

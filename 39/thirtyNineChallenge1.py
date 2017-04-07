@@ -15,7 +15,16 @@ persons.append({FIRST_NAME : "Jake", LAST_NAME: "Jacobson", POSITION: "Programme
 persons.append({FIRST_NAME : "Jacquelyn", LAST_NAME: "Jackson", POSITION: "DBA"})
 persons.append({FIRST_NAME : "Sally", LAST_NAME: "Weber", POSITION: "Web Developer", SEPARATION_DATE: "2015-12-18"})
 
-def sort_based_on_last_name():
+def get_string_input(msg, allowed_responses):
+    done = False
+    s = ""
+    while not done:
+        s = input(msg)
+        if s in allowed_responses:
+            done = True
+    return s
+
+def sort(field_to_sort_on):
     sorted_persons = list()
     
     sorted_persons.append(persons[0])
@@ -24,17 +33,27 @@ def sort_based_on_last_name():
         j = 0
         person_to_insert = persons[index]
         insertion_position_found = False
-        while insertion_position_found == False and j < len(sorted_persons):
-            if person_to_insert[LAST_NAME] < sorted_persons[j][LAST_NAME]:
-                insertion_position_found = True
-                sorted_persons.insert(j, person_to_insert)
+        field_of_person_to_insert = None
+        if field_to_sort_on in person_to_insert:
+            field_of_person_to_insert = person_to_insert[field_to_sort_on]        
 
-            j += 1
+        # If the field is None => append last.
+        if field_of_person_to_insert != None:
+            while insertion_position_found == False and j < len(sorted_persons):
+                field_of_sorted_person = sorted_persons[j][field_to_sort_on]
+
+                # If we've found a None field in the list we want to sort our person before.
+                if field_of_sorted_person == None or field_of_person_to_insert < field_of_sorted_person:
+                    insertion_position_found = True
+                    sorted_persons.insert(j, person_to_insert)
+
+                j += 1
 
         if insertion_position_found == False:
             sorted_persons.append(person_to_insert)
         index += 1
     return sorted_persons
+
 
 def print_character_repeatedly(char, number_of_times_to_print):
     for i in range(0, number_of_times_to_print):
@@ -95,7 +114,19 @@ def longest_separation_date():
     return length_of_longest(SEPARATION_DATE)
 
 def main():
-    sorted_persons = sort_based_on_last_name()
+    field_to_sort_on = get_string_input("Please select field to sort on (f, l, p, s): ", ['f','l','p','s'])
+
+    if field_to_sort_on == 'f':
+        sorted_persons = sort(FIRST_NAME)
+    elif field_to_sort_on == 'l':
+        sorted_persons = sort(LAST_NAME)
+    elif field_to_sort_on == 'p':
+        sorted_persons = sort(POSITION)
+    elif field_to_sort_on == 's':
+        sorted_persons = sort(SEPARATION_DATE)
+    else:
+        print("Something is rotten in the state of Denmark.")
+    
     len_of_longest_name = longest_name()
     len_of_longest_position = longest_position()
     len_of_longest_separation_date = longest_separation_date()

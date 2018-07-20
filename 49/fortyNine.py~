@@ -1,0 +1,149 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+import sys
+import http.client
+import re
+
+from PyQt4 import QtGui
+from PyQt4 import QtCore
+from PyQt4.QtGui import QImage
+from PyQt4.QtGui import QLabel
+from PyQt4.QtGui import QPixmap
+
+#'https://www.flickr.com/services/feeds/docs/photos_public/'
+#'https://api.flickr.com/services/feeds/photos_public.gne?tags=nature'
+MAIN_URL = 'api.flickr.com'
+SUB_URL = '/services/feeds/photos_public.gne?tags='
+image_link_reg_exp = re.compile('.*img src=&quot;http(s)*://([^/]+)(.*\\.jpg)&quot;.*')
+
+#https://www.flickr.com/photos/154258313@N06/28307590697
+# https://farm1.staticflickr.com/839/28307590697_4fd81f0ab3_m.jpg
+
+########################## MAIN CLASS ##########################
+
+
+class FortyNine(QtGui.QWidget):    
+    def __init__(self):
+        super(FortyNine, self).__init__()
+
+        # CONSTANTS
+        
+        # Instance variables.
+        self.searchStringLabel = None
+        self.searchStringTextEdit = None
+        self.searchButton = None
+        
+        self.setWindowTitle('Forty Nine')
+        
+        # Setup the GUI.
+        self.initUI()
+
+    def initUI(self):
+        main_url = 'farm1.staticflickr.com'
+        sub_url = '/839/28307590697_4fd81f0ab3_m.jpg'
+#        data = self.loadPicture(main_url, sub_url)
+#
+        image = QImage()
+#        image.loadFromData(data)
+        imageIcon = QLabel()
+#        imageIcon.setPixmap(QPixmap.fromImage(image))
+        
+        # Create widgets.
+        self.searchStringLabel = QtGui.QLabel("Search string")
+        self.searchTextEdit = QtGui.QLineEdit("", self)
+        self.searchButton = QtGui.QPushButton("&Search")
+        
+        # LAYOUT FOR THE WIDGETS.
+
+        # Set up layout to contain the widgets.
+        grid = QtGui.QGridLayout()
+        grid.setSpacing(10)
+
+        # Add widgets to the layout.
+        grid.addWidget(self.searchStringLabel, 0, 0)
+        grid.addWidget(self.searchTextEdit, 0, 1)
+        grid.addWidget(self.searchButton, 0, 2)
+        grid.addWidget(imageIcon, 1, 0, 1, 3)
+
+        grid.setColumnStretch(1, 1)
+
+        # Create scroll area to put the input widgets and the images in.
+        group_box = QtGui.QGroupBox('')
+        group_box.setLayout(grid)
+        scroll_area = QtGui.QScrollArea()
+        scroll_area.setWidget(group_box)
+        scroll_area.setWidgetResizable(True)
+
+        # Add the scroll area to a layout...
+        layout = QtGui.QVBoxLayout(self)
+        layout.addWidget(scroll_area)
+        
+        # A set layout of this widget.
+        self.setLayout(layout) 
+
+        # Connect signals to slots.
+        self.searchButton.clicked.connect(self.searchButtonClicked)
+
+        # Give focus to the seach field.
+        self.searchTextEdit.setFocus()
+        
+        # Position on screen and show.
+        self.resize(400, 400)
+        self.center()
+        self.show()
+ 
+    def center(self):
+        qr = self.frameGeometry()
+        cp = QtGui.QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())       
+
+    def searchButtonClicked(self, index):
+        search_criteria = self.searchTextEdit.text()
+        print(search_criteria)
+        feed = self.loadFeedFromFlickr(search_criteria)
+        print(feed)
+        pictures = self.loadPictures(feed)
+        print("Number of pictures loaded: %d" % len(pictures))
+
+    def loadFeedFromFlickr(self, searchText):
+        conn = http.client.HTTPConnection(MAIN_URL)
+        sub_url = SUB_URL + searchText
+        print("sub_url: %s" % sub_url)
+        print(MAIN_URL + sub_url)
+        conn.request("GET", sub_url)
+        response = conn.getresponse()
+        return response.read().decode()
+
+    def loadPictures(self, feed):
+        pictures = list()
+        for line in feed:
+            match = image_link_reg_exp.match(line)
+            if match:
+                domain = match.group(2)
+                path = match.group(3)
+                picture = self.loadPicture(domain, path)
+                pictures.append(picture)
+            else:
+                pass
+                #print("No match! Row: %s" % line)
+        return pictures
+    
+    def loadPicture(self, domain, path):        
+        conn = http.client.HTTPConnection(domain)        
+        conn.request("GET", path)
+        response = conn.getresponse()
+        #assert response.status_code == 200
+        print(response)
+        return response.read()
+    
+def main():
+    
+    app = QtGui.QApplication(sys.argv)
+    ex = FortyNine()
+    sys.exit(app.exec_())
+
+
+if __name__ == '__main__':
+    main()

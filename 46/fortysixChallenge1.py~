@@ -1,0 +1,114 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+import sys
+
+from PyQt4 import QtGui
+from PyQt4 import QtCore
+
+########################## MAIN CLASS ##########################
+        
+class FortySixChallengeOne(QtGui.QWidget):    
+    def __init__(self, frequency_to_word_dict):
+        super(FortySixChallengeOne, self).__init__()
+        
+        # Instance variables.
+        self.word_labels = list()
+        self.setWindowTitle('Forty Six Challenge 1')
+        
+        # Setup the GUI.
+        self.initUI(frequency_to_word_dict)
+        
+    def initUI(self, frequency_to_word_dict):
+        # Containers
+        group_box = QtGui.QGroupBox('')
+        row_layout = QtGui.QFormLayout()
+
+        # Loop through the words and add one row per word.
+        frequencies = list(frequency_to_word_dict.keys())
+        frequencies.sort(reverse=True)
+        max_number_of_occurrances = 0
+        if len(frequencies) > 0:
+            max_number_of_occurrances = frequencies[0]
+        for frequency in frequencies:
+            words = frequency_to_word_dict[frequency]
+            for word in words:
+                word_label = QtGui.QLabel(word)
+                progress_bar = QtGui.QProgressBar()
+                progress_bar.setMaximum(max_number_of_occurrances)
+                progress_bar.setValue(frequency)
+                number_of_occurances_label = QtGui.QLabel(str(frequency))
+                single_row_layout = QtGui.QFormLayout() # JHERE USE QBoxLayout instead!
+                single_row_layout.addRow(progress_bar, number_of_occurances_label)
+                #row_layout.addRow(word_label, progress_bar)
+                row_layout.addRow(word_label, single_row_layout)
+                self.word_labels.append(word_label)
+        
+        # Create scroll area to put the rows in.
+        group_box.setLayout(row_layout)
+        scroll_area = QtGui.QScrollArea()
+        scroll_area.setWidget(group_box)
+        scroll_area.setWidgetResizable(True)
+
+        # Add the scroll area to a layout...
+        layout = QtGui.QVBoxLayout(self)
+        layout.addWidget(scroll_area)
+        
+        # ...and set the layout of this widget to that layout.
+        self.setLayout(layout) 
+
+        # Position on screen and show.
+        self.resize(400, 600)
+        self.center()
+        self.show()
+ 
+    def center(self):
+        qr = self.frameGeometry()
+        cp = QtGui.QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())       
+
+def add_to_dict(frequency_to_word_dict, word, frequency):
+    # Remove word from old frequency.
+    if frequency > 1:
+        frequency_to_word_dict[frequency - 1].remove(word)
+
+    if frequency not in frequency_to_word_dict:
+        # First time a word having this frequency being found?
+        frequency_to_word_dict[frequency] = list()
+
+        # Add word to new frequency.
+    frequency_to_word_dict[frequency].append(word)
+    
+def open_and_process_file(filename):
+    word_frequency_dict = dict()
+    frequency_to_word_dict = dict()
+    with open(filename, 'r') as f:
+        for line in f:
+            line = line.strip()
+            for word in line.split():
+                if word not in word_frequency_dict:
+                    word_frequency_dict[word] = 1                    
+                else:
+                    word_frequency_dict[word] = word_frequency_dict[word] + 1
+
+                add_to_dict(frequency_to_word_dict, word, word_frequency_dict[word])
+                
+    return frequency_to_word_dict
+
+        
+def main():
+    if len(sys.argv) <= 1:
+        print("Usage: fortySixChallenge2 filename")
+        sys.exit(1)
+    
+    filename = sys.argv[1]
+    frequency_to_word_dict = open_and_process_file(filename)
+
+    app = QtGui.QApplication(sys.argv)
+    ex = FortySixChallengeOne(frequency_to_word_dict)
+    sys.exit(app.exec_())
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,163 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+import json
+import random
+
+# CONSTANTS
+QUESTIONS = "questions"
+QUESTION = "question"
+ANSWER = "answer"
+DISTRACTORS = "distractors"
+LEVEL = 'level'
+
+FILENAME = "triviaChallenge2.json"
+
+PLAY_GAME_CHOICE = '1'
+ADD_QUESTION_CHOICE = '2'
+EDIT_QUESTION_CHOICE = '3'
+REMOVE_QUESTION_CHOICE = '3'
+QUIT_CHOICE = 'q'
+ALLOWED_RESPONSES= [PLAY_GAME_CHOICE, ADD_QUESTION_CHOICE, EDIT_QUESTION_CHOICE, REMOVE_QUESTION_CHOICE, QUIT_CHOICE]
+
+def check_items_exist_up_to_index(l, index):
+    current_len = len(l)
+    if current_len > index:
+        return
+    current_largest_index = current_len - 1
+    while current_largest_index < index:
+        l.append(list())
+        current_largest_index += 1
+
+def group_trivia_questions(trivia_dict):
+    trivia_questions_unsorted = list()
+    trivia_questions_grouped = list()
+    for trivia_question in trivia_dict[QUESTIONS]:
+        level = trivia_question[LEVEL]
+        check_items_exist_up_to_index(trivia_questions_grouped, level - 1)
+        trivia_questions_grouped[level - 1].append(trivia_question)
+    return trivia_questions_grouped
+
+    
+def initialize_questions_dict():
+    with open(FILENAME, 'r') as f:        
+        trivia_dict = json.load(f)
+    return trivia_dict
+
+# Get input from user. Only allow certain responses.
+def get_string_input(msg, allowed_responses):
+    done = False
+    s = ""
+    while not done:
+        s = input(msg)
+        if s in allowed_responses:
+            done = True
+    return s
+
+def get_non_empty_string_input(msg):
+    done = False
+    s = ""
+    while not done:
+        s = input(msg)
+        s = s.strip()
+        if len(s) > 0:
+            done = True
+    return s
+
+def generate_alternatives(question_item):
+    l = list()
+    l.append(question_item[ANSWER])
+    for distractor in question_item[DISTRACTORS]:
+        l.append(distractor)
+    alternatives = list()
+    while len(l) > 0:
+        alternatives.append(l.pop(random.randint(0, len(l) - 1)))
+    return alternatives
+        
+def display_random_question(trivia_questions):
+    question_item = trivia_questions.pop(random.randint(0, len(trivia_questions) - 1))
+    alternatives = generate_alternatives(question_item)
+    allowed_responses = [str(i) for i in range(1, len(alternatives) + 1)]
+
+    print("\nQuestion: %s" % question_item[QUESTION])
+    for (i, alternative) in enumerate(alternatives):
+        print("%d) %s" % (i + 1, alternative))
+    choice = get_string_input("Your choice: ", allowed_responses)
+
+    answer = alternatives[int(choice) - 1]
+    if answer == question_item[ANSWER]:
+        print("That was correct!")
+        return True
+    else:
+        print("That was wrong!")
+        return False
+    
+def play_game():
+    trivia_dict = initialize_questions_dict()
+    trivia_questions_grouped = group_trivia_questions(trivia_dict)
+    print(trivia_questions_grouped)
+    
+    game_finished = False
+    number_of_correct_answers = 0
+    level = 1
+    while not game_finished and level <= len(trivia_questions_grouped):
+        user_answered_correctly = display_random_question(trivia_questions_grouped[level - 1])
+        if not user_answered_correctly:
+            print("Game over. You lost.")
+            print("You had %d number of correct answers" % number_of_correct_answers)
+            game_finished = True            
+        else:
+            number_of_correct_answers += 1            
+            if level == 5:
+                print("Game over. You won!")
+                print("You had %d correct answers" % number_of_correct_answers)
+                game_finished = True
+            else:
+                level += 1
+
+def add_question():
+    question = get_non_empty_string_input("Question: ")
+    answer = get_non_empty_string_input("Answer: ")
+    distractor_1      = get_non_empty_string_input("Distractor 1: ")
+    distractor_2      = get_non_empty_string_input("Distractor 2: ")
+    distractor_3      = get_non_empty_string_input("Distractor 3: ")
+    level = int(get_string_input('Level: ', ['1','2','3','4','5']))
+    new_question_dict = {QUESTION: question, ANSWER: answer, DISTRACTORS: [distractor_1, distractor_2, distractor_3], LEVEL: level}
+
+    trivia_dict = initialize_questions_dict()
+    trivia_dict[QUESTIONS].append(new_question_dict)
+    with open(FILENAME, 'w') as f:
+        json.dump(trivia_dict, f)
+    print("Question saved!")
+                
+def display_main_menu():
+    print("*************************")
+    print("*       MAIN MENU       *")
+    print("*************************")
+    print("1) Play game.")
+    print("2) Add question.")
+    print("3) Edit question")
+    print("4) Remove question")
+    print("q) Quit")
+        
+
+def main():
+    done = False
+    while not done:
+        display_main_menu()
+        choice = get_string_input('Choice: ', ALLOWED_RESPONSES)
+        if choice == QUIT_CHOICE:
+            done = True
+        elif choice == PLAY_GAME_CHOICE:
+            items_dict = play_game()
+        elif choice == ADD_QUESTION_CHOICE:
+            add_question()
+        elif choice == EDIT_QUESTION_CHOICE:
+            pass
+        elif choice == REMOVE_QUESTION_CHOICE:
+            pass
+                
+### MAIN ###
+
+if __name__ == '__main__':
+    main()

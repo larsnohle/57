@@ -1,0 +1,135 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+import json
+
+import urllib.request
+import urllib.parse
+from urllib.request import Request, urlopen
+
+# CONSTANTS
+ORDINAL = 'ordinal'
+TODO = 'todo'
+DATABASE_SERVICE_URL='https://fiftyone-a1bf4.firebaseio.com/todos.json'
+DATABASE_SERVICE_URL_FOR_DELETE='https://fiftyone-a1bf4.firebaseio.com/todos/'
+
+def generate_todo_entry_in_json_format(todo, ordinal):
+    todo_dict = {}
+    todo_dict[ORDINAL] = ordinal
+    todo_dict[TODO] = todo
+    return json.dumps(todo_dict)
+
+def add_todo_to_firebase(todo, ordinal):
+    todo_dict_as_json_string = generate_todo_entry_in_json_format(todo, ordinal)
+    request = Request(DATABASE_SERVICE_URL, todo_dict_as_json_string.encode())
+    response_payload = urlopen(request).read().decode()
+
+def read_current_todos_from_firebase():
+    request = Request(DATABASE_SERVICE_URL)
+    response_payload = urlopen(request).read().decode()
+#    print(response_payload)
+    todo_dict = json.loads(response_payload)
+#    print(todo_dict)
+    return todo_dict
+
+def print_todos_in_dict(todo_dict):
+    print("*** TODO: ")
+    if todo_dict != None:
+        for todo in todo_dict.values():
+            print("[" + str(todo[ORDINAL]) + "]" + " " + todo[TODO])
+
+def get_highest_ordinal_from_todos(todo_dict):
+    if todo_dict == None:
+        return 0    
+    highest_so_far = 0
+    for todo in todo_dict.values():
+        if todo[ORDINAL] > highest_so_far:
+            highest_so_far = todo[ORDINAL]
+    return highest_so_far
+            
+def get_todos_from_user():
+    todos = list()
+    try:
+        while True:
+            todo = input("Please enter TODO: End with ctrl+d. : ")
+            todos.append(todo)
+    except EOFError:
+        print() # To let the output start on a new line.
+    return todos
+        
+def add_new_todos_to_firebase(todos, currently_highest_ordinal):
+    next_ordinal = currently_highest_ordinal + 1
+    for todo in todos:
+        add_todo_to_firebase(todo, next_ordinal)
+        next_ordinal += 1
+
+def extract_existing_ordinals(todo_dict_from_firebase):
+    existing_ordinals = list()
+    if todo_dict_from_firebase != None:
+        for entry in todo_dict_from_firebase.values():
+            existing_ordinals.append(entry[ORDINAL])
+    
+    return existing_ordinals
+
+def find_entry(todo_dict_from_firebase, ordinal_to_find):
+    for (key, todo) in todo_dict_from_firebase.items():     
+        if todo[ORDINAL] == ordinal_to_find:            
+            return {key : todo}
+    return None
+
+def delete_todo_from_firebase(todo_dict_from_firebase, ordinal_to_remove):
+    dict_containing_entry_to_remove = find_entry(todo_dict_from_firebase, ordinal_to_remove)
+    assert dict_containing_entry_to_remove != None
+#    first_value = next(iter(dict_containing_entry_to_remove.values()))
+    
+    #entry_to_delete_as_json = json.dumps(dict_containing_entry_to_remove)
+#    entry_to_delete_as_json = json.dumps(first_value)    
+#    print("Will remove: ")
+#    print(entry_to_delete_as_json)
+    #    request = Request(DATABASE_SERVICE_URL_FOR_DELETE, data=entry_to_delete_as_json.encode(), method='DELETE')
+
+    first_key = next(iter(dict_containing_entry_to_remove.keys()))    
+    url_to_use_for_delete = DATABASE_SERVICE_URL_FOR_DELETE + "ordinal/" + str(ordinal_to_remove)+ ".json"
+    print("Will delete form URL %s" % url_to_use_for_delete) 
+    request = Request(url_to_use_for_delete, method='DELETE')
+    #response_payload = urlopen(request).read().decode()
+    response = urlopen(request)
+    print(response)
+    print("Response code: ", end='')
+    print(response.getcode())
+    print("Response payload: ")
+    print(response.read().decode())
+
+
+def ask_user_to_delete_a_todo(todo_dict_from_firebase):
+    existing_ordinals = extract_existing_ordinals(todo_dict_from_firebase)
+    done = False
+    while not done:
+        try:
+            ordinal_to_remove_as_string = input("Enter the number of the TODO entry to remove. End with ctrl+d. : ")
+            ordinal_to_remove = int(ordinal_to_remove_as_string)
+            if ordinal_to_remove in existing_ordinals:
+                delete_todo_from_firebase(todo_dict_from_firebase, ordinal_to_remove)
+            else:
+                print("Please specify an existing number!")                
+        except ValueError:
+            print("Please specify a valid number!")
+        except EOFError:
+            done = True
+            print() # To let the output start on a new line.
+    
+def main():
+    todos = get_todos_from_user()
+    already_existing_todos = read_current_todos_from_firebase()
+    currently_highest_ordinal = get_highest_ordinal_from_todos(already_existing_todos)
+    add_new_todos_to_firebase(todos, currently_highest_ordinal)
+    todo_dict_from_firebase = read_current_todos_from_firebase()
+    print_todos_in_dict(todo_dict_from_firebase)
+    if todo_dict_from_firebase != None:
+        ask_user_to_delete_a_todo(todo_dict_from_firebase)
+    
+    
+### MAIN ###
+
+if __name__ == '__main__':
+    main()

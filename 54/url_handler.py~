@@ -1,0 +1,123 @@
+
+class UrlHandler:
+    def __init__(self):
+        self.long_url_to_short_url_dict = dict()
+        self.short_url_to_long_url_dict = dict()
+        self.short_url_to_number_of_invokations_dict = dict()
+
+    def short_url_exists_for(self):
+        return short_url in self.short_url_to_long_url_dict
+    
+    def get_long_url_for_short_url(self, short_url):
+        if not short_url in self.short_url_to_long_url_dict:
+            raise ValueError
+        return self.short_url_to_long_url_dict[short_url]
+        
+    def mapping_exists(self, long_url):
+        return long_url in self.long_url_to_short_url_dict
+
+    def add_mapping(self, short_url, long_url):
+        self.long_url_to_short_url_dict[long_url] = short_url
+        self.short_url_to_long_url_dict[short_url] = long_url
+        
+    def generate_and_add_short_url(self, long_url):
+        # Mapping already exists?
+        if self.mapping_exists(long_url):
+            return self.long_url_to_short_url_dict[long_url]
+
+        # No
+        # First mapping ever?
+        if len(self.long_url_to_short_url_dict.values()) == 0:
+            short_url = 'a'
+        else:
+            # No. Generate next mapping
+            existing_short_urls = self.sort_list_by_length(self.long_url_to_short_url_dict.values())
+            short_url = self.next_identifier_after(existing_short_urls[-1])
+
+        self.add_mapping(short_url, long_url)
+        return short_url
+
+    def short_url_invoked(self, short_url):
+        if not short_url in self.short_url_to_long_url_dict:
+            raise ValueError
+
+        if not short_url in self.short_url_to_number_of_invokations_dict:
+            self.short_url_to_number_of_invokations_dict[short_url] = 1
+        else:
+            self.short_url_to_number_of_invokations_dict[short_url] += 1 # Is this correct syntax?
+
+    def get_number_of_invocations(self, short_url):
+        if not short_url in self.short_url_to_long_url_dict:
+            raise ValueError
+        
+        return self.short_url_to_number_of_invokations_dict[short_url]
+            
+    ### UTILITY METHODS
+        
+    def sort_list_by_length(self, l):
+        new_list = list()
+        for i in l:
+            if len(new_list) == 0:
+                new_list.append(i)
+        else:
+            for (index, ni) in enumerate(new_list):
+                if len(i) < len(ni) or (len(i) == len(ni) and i < ni):
+                    new_list.insert(index, i)
+                    break
+            else:
+                new_list.append(i)
+                    
+        return new_list
+
+    def next_identifier_after(self, s):
+        index_of_last_character = len(s) - 1
+        next_identifier_as_list = list(s)
+        last_character = s[index_of_last_character]
+        if last_character < 'z':
+            next_identifier_as_list[index_of_last_character] = chr(ord(last_character) + 1)
+        else:
+            i = index_of_last_character - 1
+            while i >= 0:
+                if next_identifier_as_list[i] < 'z':
+                    next_identifier_as_list[i] = chr(ord(next_identifier_as_list[i]) + 1)
+                    break
+                else:
+                    i -= 1
+            else:
+                next_identifier_as_list = list('a' * (len(s) + 1))
+        return ''.join(next_identifier_as_list)
+    
+### MAIN ###
+
+if __name__ == '__main__':
+    # Test some stuff.
+    instance = UrlHandler()
+    long_url = 'a.b.c'
+    short_url = instance.generate_and_add_short_url(long_url)
+    print("Long url: %s short url: %s" % (long_url, short_url))
+    long_url = 'a.b.c'
+    short_url = instance.generate_and_add_short_url(long_url)
+    print("Long url: %s short url: %s" % (long_url, short_url))
+    long_url = 'a.b.b'
+    short_url = instance.generate_and_add_short_url(long_url)
+    print("Long url: %s short url: %s" % (long_url, short_url))
+    long_url = 'b.b.b'
+    short_url = instance.generate_and_add_short_url(long_url)
+    print("Long url: %s short url: %s" % (long_url, short_url))
+    long_url = 'a.b.b'
+    short_url = instance.generate_and_add_short_url(long_url)
+    print("Long url: %s short url: %s" % (long_url, short_url))   
+
+    
+    instance.short_url_invoked(short_url)
+    print("Number of invocations %d" % instance.get_number_of_invocations(short_url))
+    instance.short_url_invoked(short_url)
+    print("Number of invocations %d" % instance.get_number_of_invocations(short_url))
+    instance.short_url_invoked(short_url)
+    print("Number of invocations %d" % instance.get_number_of_invocations(short_url))
+    instance.short_url_invoked(short_url)
+    print("Number of invocations %d" % instance.get_number_of_invocations(short_url))
+    instance.short_url_invoked(short_url)
+    print("Number of invocations %d" % instance.get_number_of_invocations(short_url))
+
+    

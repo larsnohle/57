@@ -1,0 +1,146 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+import sys
+import http.client
+import re
+
+from PyQt4 import QtGui
+from PyQt4 import QtCore
+from PyQt4.QtGui import QImage
+from PyQt4.QtGui import QLabel
+from PyQt4.QtGui import QPixmap
+
+MAIN_URL = 'api.flickr.com'
+SUB_URL = '/services/feeds/photos_public.gne?tags='
+image_link_reg_exp = re.compile('.*img src=&quot;http(s)*://([^/]+)(.*\\.jpg)&quot;.*')
+
+########################## MAIN CLASS ##########################
+class FortyNine(QtGui.QWidget):    
+    def __init__(self):
+        super(FortyNine, self).__init__()
+
+        # Instance variables.
+        self.searchStringLabel = None
+        self.searchStringTextEdit = None
+        self.searchButton = None
+        self.tagDescriptionLabel = None
+        self.imageLabels = list()
+        self.imageLabelLayout = QtGui.QVBoxLayout()
+        
+        self.setWindowTitle('Forty Nine')
+        
+        # Setup the GUI.
+        self.initUI()
+
+    def initUI(self):        
+        # Create widgets.
+        self.searchStringLabel = QtGui.QLabel("Search string")
+        self.searchTextEdit = QtGui.QLineEdit("", self)
+        self.searchButton = QtGui.QPushButton("&Search")
+        self.tagDescriptionLabel = QtGui.QLabel()
+        
+        # LAYOUT FOR THE WIDGETS.
+
+        # Search layout.
+        searchLayout = QtGui.QHBoxLayout()
+        searchLayout.addWidget(self.searchStringLabel)
+        searchLayout.addWidget(self.searchTextEdit)
+        searchLayout.addWidget(self.searchButton)    
+        
+        # Create scroll area to put the input widgets and the images in.
+        groupBox = QtGui.QGroupBox('')
+        groupBox.setLayout(self.imageLabelLayout)
+        scrollArea = QtGui.QScrollArea()
+        scrollArea.setWidget(groupBox)
+        scrollArea.setWidgetResizable(True)
+
+        # Add the scroll area to a layout...
+        mainLayout = QtGui.QVBoxLayout(self)
+        mainLayout.addLayout(searchLayout)
+        mainLayout.addWidget(self.tagDescriptionLabel)
+        mainLayout.addWidget(scrollArea)
+        
+        # A set layout of this widget.
+        self.setLayout(mainLayout) 
+
+        # Connect signals to slots.
+        self.searchButton.clicked.connect(self.searchButtonClicked)
+
+        # Give focus to the seach field.
+        self.searchTextEdit.setFocus()
+        
+        # Position on screen and show.
+        self.resize(400, 400)
+        self.center()
+        self.show()
+ 
+    def center(self):
+        qr = self.frameGeometry()
+        cp = QtGui.QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())       
+
+    def searchButtonClicked(self, index):
+        search_criteria = self.searchTextEdit.text()
+        feed = self.loadFeedFromFlickr(search_criteria)
+        pictures = self.loadPictures(feed)
+        print("Number of pictures loaded: %d" % len(pictures))
+        self.displayPicturesInLabes(pictures)
+        self.tagDescriptionLabel.setText('Photos about "%s"' % search_criteria)
+
+    def loadFeedFromFlickr(self, searchText):
+        conn = http.client.HTTPConnection(MAIN_URL)
+        sub_url = SUB_URL + searchText
+        print("sub_url: %s" % sub_url)
+        print(MAIN_URL + sub_url)
+        conn.request("GET", sub_url)
+        response = conn.getresponse()
+        return response.read().decode()
+
+    def loadPictures(self, feed):
+        pictures = list()
+        lines = feed.split("\n")
+        for line in lines:
+            match = image_link_reg_exp.match(line)
+            if match:
+                domain = match.group(2)
+                path = match.group(3)
+                picture = self.loadPicture(domain, path)
+                pictures.append(picture)
+            else:
+                pass
+        return pictures
+    
+    def loadPicture(self, domain, path):        
+        conn = http.client.HTTPConnection(domain)        
+        conn.request("GET", path)
+        response = conn.getresponse()
+        return response.read()
+
+    def displayPicturesInLabes(self, pictures):
+        self.removeAllImageLabels()
+        for picture in pictures:
+            imageLabel = self.createImageLabel(picture)
+            self.imageLabelLayout.addWidget(imageLabel)
+            self.imageLabels.append(imageLabel)
+            
+    def removeAllImageLabels(self):
+        for imageLabel in self.imageLabels:
+            self.imageLabelLayout.removeWidget(imageLabel)
+            
+    def createImageLabel(self, picture):
+        image = QImage()
+        image.loadFromData(picture)
+        imageLabel = QLabel()
+        imageLabel.setPixmap(QPixmap.fromImage(image))
+        return imageLabel
+    
+def main():
+    app = QtGui.QApplication(sys.argv)
+    ex = FortyNine()
+    sys.exit(app.exec_())
+
+
+if __name__ == '__main__':
+    main()

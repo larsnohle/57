@@ -1,0 +1,47 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+PLEASE_ENTER_FILE = 'Please enter name of file to process: '
+
+def get_non_empty_string_input(msg):
+    done = False
+    s = ""
+    while not done:
+        s = input(msg)
+        s = s.strip()
+        if len(s) > 0:
+            done = True
+    return s
+
+def open_and_process_file(filename):
+    word_frequency_dict = dict()
+    with open(filename, 'r') as f:
+        for line in f:
+            line = line.strip()
+            for word in line.split():
+                if word not in word_frequency_dict:
+                    word_frequency_dict[word] = 1
+                else:
+                    word_frequency_dict[word] = word_frequency_dict[word] + 1
+                    
+    return word_frequency_dict
+
+def display_results(sorted_list_of_words_in_frequency_order, word_frequency_dict):
+    for word in sorted_list_of_words_in_frequency_order:
+        print(word + ': ' + ('*' * word_frequency_dict[word]))
+        
+def sort_keys_in_frequency_order(word_frequency_dict):
+    keys = list(word_frequency_dict.keys())
+    keys.sort() here sort in frequency order!
+    return keys
+
+def main():
+    filename = get_non_empty_string_input(PLEASE_ENTER_FILE)
+    word_frequency_dict = open_and_process_file(filename)
+    sorted_list_of_words_in_frequency_order = sort_keys_in_frequency_order(word_frequency_dict)
+    display_results(sorted_list_of_words_in_frequency_order, word_frequency_dict)
+    
+### MAIN ###
+
+if __name__ == '__main__':
+    main()

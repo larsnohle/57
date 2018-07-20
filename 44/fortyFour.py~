@@ -1,0 +1,61 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+import json
+
+INPUT_FILE_NAME = "products.json"
+ENTER_PRODUCT_NAME = 'What is the product name? '
+ERROR_MESSAGE = 'Sorry, that product was not found in our inventory.'
+PRODUCTS = 'products'
+NAME = 'name'
+PRICE = 'price'
+QUANTITY = 'quantity'
+NAME_CAPITALIZED = 'Name: '
+PRICE_CAPITALIZED = 'Price: '
+QUANTITY_CAPITALIZED = 'Quantity on hand: '
+
+def read_json_file():
+    json_payload = None
+    with open(INPUT_FILE_NAME, 'r') as json_file:
+        json_payload = json.load(json_file)
+    return json_payload
+
+def create_product_dict(products_as_json):
+    product_dict = dict()
+    product_array = products_as_json[PRODUCTS]
+    for product in product_array:
+        product_dict[product[NAME]] = product
+
+    return product_dict
+
+def format_price(price):
+    HERE double(price)
+    return price
+
+def print_product(product):
+    print(NAME_CAPITALIZED, end='')
+    print(product[NAME])
+    print(PRICE_CAPITALIZED, end='')
+    print(format_price(product[PRICE]))
+    print(QUANTITY_CAPITALIZED, end='')
+    print(product[QUANTITY])
+
+def loop_until_product_found(product_dict):
+    product_found = False
+    while not product_found:
+        product_name = input(ENTER_PRODUCT_NAME)
+        if product_name in product_dict:
+            product_found = True
+            print_product(product_dict[product_name])
+        else:
+            print(ERROR_MESSAGE)
+
+def main():
+    products_as_json = read_json_file()
+    product_dict = create_product_dict(products_as_json)
+    loop_until_product_found(product_dict)
+    
+### MAIN ###
+
+if __name__ == '__main__':
+    main()

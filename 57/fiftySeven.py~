@@ -1,0 +1,27 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+import json
+
+# CONSTANTS
+QUESTIONS = "questions"
+QUESTION = "question"
+ANSWER = "answer"
+DISTRACTORS = "distractors"
+
+FILENAME = "trivia.json"
+
+def initialize_questions_dict():
+    with open(FILENAME, 'r') as f:        
+        trivia_dict = json.load(json_file)
+    return trivia_dict
+
+
+def main():
+    trivia_dict = initialize_questions_dict()
+    print(trivia_dict)
+
+### MAIN ###
+
+if __name__ == '__main__':
+    main()

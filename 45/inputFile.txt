@@ -1,0 +1,5 @@
+One should never utilize the word "utilize" in
+writing. Use "use" instead.
+En katt är ett djur. En katt är bra. utilize skall det inte stå här.
+Den här raden skall lämnas orörd.
+use Men den här raden skall det göras ändringar på katt use.

@@ -1,0 +1,26 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+import random
+
+LOWER_CASE_LETTERS = "abcdefghijklmnopqrstuvwxyzåäö"
+MIN_NAME_LENGTH = 2
+MAX_NAME_LENGTH = 10
+NUMBER_OF_NAMES_TO_GENERATE = 10
+def generate_name():
+    length_of_name_to_generate = random.randint(MIN_NAME_LENGTH, MAX_NAME_LENGTH)
+    name = ''.join([random.choice(LOWER_CASE_LETTERS) for x in range(length_of_name_to_generate + 1)])
+    name = name[0].upper() + name [1:]
+    return name
+
+
+
+def main():
+    for i in range(NUMBER_OF_NAMES_TO_GENERATE):
+        name = generate_name()
+        print(name)
+
+### MAIN ###
+
+if __name__ == '__main__':
+    main()

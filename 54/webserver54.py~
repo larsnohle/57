@@ -1,0 +1,264 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+import socket
+import re
+
+long_url_to_short_url_dict = dict()
+short_url_to_long_url_dict = dict()
+
+
+PORT = 9096
+GENERATE_SHORT_URL_PATH = "/generateShortUrl"
+
+REQUEST_REG_EXP = re.compile('(\\w+) ([\\w|/]+) HTTP/1.1')
+CONTENT_LENGTH_HEADER_REG_EXP = re.compile('Content-Length: (\\d+)')
+URl_TO_GENERATE_SHORT_URL_FOR_REG_EXP = re.compile('url=(.+)')
+
+def sort_list_by_length(l):
+    new_list = list()
+    for i in l:
+        if len(new_list) == 0:
+            new_list.append(i)
+        else:
+            for (index, ni) in enumerate(new_list):
+                if len(i) < len(ni) or (len(i) == len(ni) and i < ni):
+                    new_list.insert(index, i)
+                    break
+            else:
+                new_list.append(i)
+                    
+    return new_list
+
+def next_identifier_after(s):
+    index_of_last_character = len(s) - 1
+    next_identifier_as_list = list(s)
+    last_character = s[index_of_last_character]
+    if last_character < 'z':
+        next_identifier_as_list[index_of_last_character] = chr(ord(last_character) + 1)
+    else:
+        i = index_of_last_character - 1
+        while i >= 0:
+            if next_identifier_as_list[i] < 'z':
+                next_identifier_as_list[i] = chr(ord(next_identifier_as_list[i]) + 1)
+                break
+            else:
+                i -= 1
+        else:
+            next_identifier_as_list = list('a' * (len(s) + 1))
+    return ''.join(next_identifier_as_list)
+
+def generate_root_response(hostname):
+    body = """
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head />
+<body>
+<h1>URL shortener</h1>
+<form method=post action="http://%s:%s%s">
+<table>
+<tr>
+<th align=right>URL to shorten:</th>
+<td><input type=text name="url" size=32 /></td>
+</tr>
+<tr>
+<td><input type=submit value="Submit" /></td>
+</tr>
+</table>
+</form>
+</body>
+</html>
+    """ % (hostname, str(PORT), GENERATE_SHORT_URL_PATH)
+
+    return add_headers(body, 200)
+
+def generate_error_request(method, path):
+    body = """
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head />
+<body>
+ Method: %s and path: %s not supported!
+</body>
+</html>
+    """ % (method, path)
+
+    return add_headers(body, 400)
+
+def generate_short_url_path(long_url):
+    if not long_url in long_url_to_short_url_dict:
+        if len(long_url_to_short_url_dict.values()) == 0:
+            short_url_to_use = 'a'
+        else:
+            existing_short_urls = sort_list_by_length(long_url_to_short_url_dict.values())
+            short_url_to_use = next_identifier_after(existing_short_urls[-1])
+        long_url_to_short_url_dict[long_url] = short_url_to_use
+        short_url_to_long_url_dict[short_url_to_use] = long_url
+
+    return long_url_to_short_url_dict[long_url]
+
+def generate_short_url_response(hostname, url_to_generate_short_version_of):
+    short_url = "http://%s:%d/%s" % (hostname, PORT, generate_short_url_path(url_to_generate_short_version_of))
+    body = """
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head />
+<body>
+ The short URL of  %s is: <a href="%s">%s</a>
+</body>
+</html>
+    """ % (url_to_generate_short_version_of, short_url, short_url)
+
+    return add_headers(body, 200)
+
+def generate_redirect_to(long_url):
+    s = "HTTP/1.1 301 Moved Permanently"
+
+    s += "\n"
+    s += "Location:http://%s:80/" % long_url
+    s += "\n"
+    return s
+
+def add_headers(body, response_code):
+    s = "HTTP/1.1 "
+    
+    if response_code == 200:
+        s += "200 OK"
+    elif response_code == 400:
+        s += "400 Bad Request"
+    else:
+        s += "404 Not Found"
+
+    s += "\n"
+    s += "Content-Type: text/html"
+    s += "\n"
+    s += "\n"
+    s += body
+    return s
+
+def get_url_from_body(body):
+    url_to_generate_short_url_for = None
+    match = URl_TO_GENERATE_SHORT_URL_FOR_REG_EXP.match(body)
+    if match:
+        url_to_generate_short_url_for = match.group(1)
+    return url_to_generate_short_url_for
+
+def generate_response(method, path, content_length, body, hostname):
+    print("Method: %s path: %s" % (method, path))
+
+    if method == "GET" and path == "/":
+        s = generate_root_response(hostname)
+    elif method == "POST" and path == GENERATE_SHORT_URL_PATH:
+        url_to_create_short_url_for = get_url_from_body(body)
+        s = generate_short_url_response(hostname, url_to_create_short_url_for)
+    elif method == "GET" and len(path) > 1 and path[1:] in short_url_to_long_url_dict:
+        s = generate_redirect_to(short_url_to_long_url_dict[path[1:]])
+    else:
+        s = generate_error_request(method, path)
+    return s
+
+def extract_content_length(headers):
+    content_length = None
+    for header in headers:
+        match = CONTENT_LENGTH_HEADER_REG_EXP.match(header)
+        if match:            
+            content_length = int(match.group(1))    
+    return content_length
+
+def extract_body(rest_of_request):
+    body = None
+    print("extract_body: len(rest_of_request): %d" % len(rest_of_request))
+    for (index, line) in enumerate(rest_of_request):
+        if len(line.strip()) == 0 and index + 1 < len(rest_of_request):
+            body = rest_of_request[index + 1]
+            break
+    return body
+
+def parse_request(request):
+    lines = request.split('\n')
+    match = REQUEST_REG_EXP.match(lines[0])
+    value_to_return = None
+    if match:
+        method = match.group(1)
+        path = match.group(2)
+        content_length = extract_content_length(lines[1:])
+        body = extract_body(lines[1:])
+        value_to_return = (method, path, content_length, body)
+    else:
+        print('The request could not matched!')
+    return value_to_return
+
+    
+def start_server():
+    serversocket = None
+    try:
+        hostname = socket.gethostname()
+        serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        serversocket.bind((hostname, PORT))
+        serversocket.listen(5)
+
+        while True:
+            (client_socket, address) = serversocket.accept()
+            print("Connection accepted!")
+            received_bytes = client_socket.recv(4096)
+            received_message_as_string = received_bytes.decode('utf-8')
+            print("RECEIVED REQUEST:")
+            print(received_message_as_string)
+            parsed_request = parse_request(received_message_as_string)
+            if parsed_request != None:
+                (method, path, content_length, body) = parsed_request
+                response = generate_response(method, path, content_length, body, hostname)
+            else:
+                response = generate_error_request("", "")
+            print("Will respond with the following:")
+            print(response)
+            message_as_bytes = response.encode('utf-8')
+            client_socket.send(message_as_bytes)
+            print("Message sent!")
+            client_socket.close()
+    finally:
+        print('In finally')
+        if serversocket != None:
+            print('Will close server socket.')
+            serversocket.close()
+            print('Has closed server socket.')
+
+
+def main():
+    #    l = ['b', 'bb', 'a', 'aa', 'bbb', 'aaa']
+    #    nl  = sort_list_by_length(l)
+    #    print(nl)
+    #    c = 'a'
+    #    print("Next after %s is %s" % (c, next_identifier_after(c)))
+    #    c = 'z'
+    #    print("Next after %s is %s" % (c, next_identifier_after(c)))
+    #    c = 'aa'
+    #    print("Next after %s is %s" % (c, next_identifier_after(c)))
+    #    c = 'az'
+    #    print("Next after %s is %s" % (c, next_identifier_after(c)))
+    #    c = 'zz'
+    #    print("Next after %s is %s" % (c, next_identifier_after(c)))
+    #    c = 'abz'
+    #    print("Next after %s is %s" % (c, next_identifier_after(c)))
+#    long_url = 'a.b.c'
+#    short_url = generate_short_url(long_url)
+#    print("Long url: %s short url: %s" % (long_url, short_url))
+#    long_url = 'a.b.c'
+#    short_url = generate_short_url(long_url)
+#    print("Long url: %s short url: %s" % (long_url, short_url))
+#    long_url = 'a.b.b'
+#    short_url = generate_short_url(long_url)
+#    print("Long url: %s short url: %s" % (long_url, short_url))
+#    long_url = 'b.b.b'
+#    short_url = generate_short_url(long_url)
+#    print("Long url: %s short url: %s" % (long_url, short_url))
+#    long_url = 'a.b.b'
+#    short_url = generate_short_url(long_url)
+#    print("Long url: %s short url: %s" % (long_url, short_url))   
+
+    start_server()
+
+### MAIN ###
+
+if __name__ == '__main__':
+    main()

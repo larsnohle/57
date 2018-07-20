@@ -1,0 +1,34 @@
+import datetime;
+import random
+
+lower_case_letters = ['q','w','e','r','t','y','u','i','o','p','a','s','d','f','g','h','j','k','l','z','x','c','v','b','n','m']
+upper_case_letters = ['Q','W','E','R','T','Y','U','I','O','P','A','S','D','F','G','H','J','K','L','Z','X','C','V','B','N','M']
+digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
+sequences_to_pick_data_from = [lower_case_letters, upper_case_letters, digits]
+NONCE_LENGTH = 32
+
+# curl --request GET  --url 'https://api.twitter.com/1.1/search/tweets.json?q=nasa&result_type=popular'  --header 'authorization: OAuth oauth_consumer_key="maDF5Ns7UrP3atWzCt7wJwZ5c",  oauth_nonce="oQdC5xZ10DLhl2jMERIMej1py73fcLOl", oauth_signature="generated-signature",  oauth_signature_method="HMAC-SHA1", oauth_timestamp="1531215246",  oauth_token="1589408701-QQpGPWp04Cc6KtRpNPl3lLJoQjdT3BaWtdVBrTn", oauth_version="1.0"'
+
+
+def generate_random_string(length):
+    l = list()
+    for i in range(length):
+        sequence = sequences_to_pick_data_from[random.randint(0, len(sequences_to_pick_data_from) - 1)]
+        c = sequence[random.randint(0, len(sequence) - 1)]
+        l.append(c)
+    return ''.join(l)
+
+def generateTimestamp():
+    return int(datetime.datetime.now().timestamp())
+
+def generate_nonce(length):
+    return self.generate_random_string(NONCE_LENGTH)
+
+
+def main():
+    print(generate_random_string(32))
+
+### MAIN ###
+
+if __name__ == '__main__':
+    main()

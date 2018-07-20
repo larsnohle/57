@@ -1,0 +1,23 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+import re
+
+line = '<link rel="enclosure" type="image/jpeg" href="http://farm1.staticflickr.com/922/43158356892_5618f39c99_b.jpg" />'
+image_link_reg_exp = re.compile('.*link .* href=\\"http(s)*://([^/]+)(.*\\.jpg)\\".*')
+
+def main():
+    match = image_link_reg_exp.match(line)
+    if match:
+        print("Matches!")
+        domain = match.group(2)
+        path = match.group(3)
+        print(domain)
+        print(path)
+    else:
+        print("No match!")
+
+### MAIN ###
+
+if __name__ == '__main__':
+    main()
